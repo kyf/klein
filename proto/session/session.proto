@@ -28,7 +28,7 @@ message UnRegisterRequest{
 }
 
 message UnRegisterReply{
-    string Status = 1;
+    bool Status = 1;
     string Message = 2;
 }
 

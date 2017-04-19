@@ -4,14 +4,19 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"time"
 
 	"github.com/kyf/klein/config"
+	"github.com/kyf/klein/session"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
 
 type Connector struct {
-	clientPool map[ID]*Client
-	conf       *config.ConnectorConfig
-	logger     *Logger
+	clientPool    map[ID]*Client
+	conf          *config.ConnectorConfig
+	logger        *Logger
+	sessionClient session.SessionClient
 	sync.Mutex
 }
 
@@ -19,18 +24,45 @@ func NewConnector() *Connector {
 	return &Connector{clientPool: make(map[ID]*Client)}
 }
 
-func (this *Connector) Add(cli *Client) {
+func (this *Connector) Add(cli *Client) error {
 	this.Lock()
 	defer this.Unlock()
+
+	req := getRegReqFromPool()
+	defer releaseRegReq(req)
+	req.ConnectorHost = this.conf.GrpcHost
+	req.UserId = string(cli.UserId[:])
+	req.ConnId = string(cli.ConnId[:])
+
+	ctx, _ := context.WithTimeout(context.Background(), SessionRegisterTimeout)
+	_, err := this.sessionClient.Register(ctx, req)
+	if err != nil {
+		return err
+	}
 
 	this.clientPool[cli.Id()] = cli
+
+	return nil
 }
 
-func (this *Connector) Remove(cli *Client) {
+func (this *Connector) Remove(cli *Client) error {
 	this.Lock()
 	defer this.Unlock()
 
+	req := getUnRegReqFromPool()
+	defer releaseUnRegReq(req)
+	req.ConnectorHost = this.conf.GrpcHost
+	req.UserId = string(cli.UserId[:])
+	req.ConnId = string(cli.ConnId[:])
+
+	ctx, _ := context.WithTimeout(context.Background(), SessionUnRegisterTimeout)
+	_, err := this.sessionClient.UnRegister(ctx, req)
+	if err != nil {
+		return err
+	}
+
 	delete(this.clientPool, cli.Id())
+	return nil
 }
 
 func (this *Connector) Init(confPath string) error {
@@ -47,6 +79,14 @@ func (this *Connector) Init(confPath string) error {
 
 	this.conf = conf
 	this.logger = logger
+
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*30)
+	conn, err := grpc.DialContext(ctx, conf.SessionHost, grpc.WithUserAgent(CONNECTOR_USERAGENT), grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	secli := session.NewSessionClient(conn)
+	this.sessionClient = secli
 	return nil
 }
 

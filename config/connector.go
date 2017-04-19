@@ -1,10 +1,12 @@
 package config
 
 type ConnectorConfig struct {
-	LogPrefix string `yaml:"logprefix"`
-	LogPath   string `yaml:"logpath"`
-	TcpPort   string `yaml:"tcpport"`
-	HttpPort  string `yaml:"httpport"`
+	LogPrefix   string `yaml:"LogPrefix"`
+	LogPath     string `yaml:"LogPath"`
+	TcpPort     string `yaml:"TcpPort"`
+	HttpPort    string `yaml:"HttpPort"`
+	GrpcHost    string `yaml:"GrpcHost"`
+	SessionHost string `yaml:"SessionHost"`
 }
 
 func (this *ConnectorConfig) Load(fpath string) error {

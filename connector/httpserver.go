@@ -2,6 +2,8 @@ package connector
 
 import (
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type HttpServer struct {
@@ -9,7 +11,13 @@ type HttpServer struct {
 	svr *http.Server
 }
 
+func syncMessage(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("sync message ..."))
+}
+
 func NewHttpServer(port string, ctx *Connector) *HttpServer {
+	handler := mux.NewRouter()
+	handler.HandleFunc("/sync/msg", syncMessage)
 	svr := &http.Server{Addr: ":" + port, Handler: handler}
 	return &HttpServer{ctx, svr}
 }

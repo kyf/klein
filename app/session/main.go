@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/kyf/klein/connector"
-
 	"flag"
 	"log"
 	"os"
+
+	"github.com/kyf/klein/session"
 )
 
 var (
@@ -13,7 +13,7 @@ var (
 )
 
 func main() {
-	flag.StringVar(&confpath, "config", "", "connector config path")
+	flag.StringVar(&confpath, "config", "", "session server config path")
 	flag.Parse()
 
 	if confpath == "" {
@@ -21,8 +21,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	svr := connector.NewConnector()
-	err := svr.Init(confpath)
+	svr, err := session.NewServer(confpath)
 	if err != nil {
 		log.Fatal(err)
 	}

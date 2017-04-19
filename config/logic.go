@@ -1,11 +1,11 @@
 package config
 
-type SessionConfig struct {
+type LogicConfig struct {
 	LogPrefix string `yaml:"LogPrefix"`
 	LogPath   string `yaml:"LogPath"`
 	RpcPort   string `yaml:"RpcPort"`
 }
 
-func (this *SessionConfig) Load(fpath string) error {
+func (this *LogicConfig) Load(fpath string) error {
 	return load(this, fpath)
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"net"
+	"time"
 )
 
 var (
@@ -11,6 +12,11 @@ var (
 	ErrCodehandshakeInvalidBody = 102
 
 	SuccessCodehandshake = 200
+)
+
+const (
+	SessionRegisterTimeout   = time.Second * 10
+	SessionUnRegisterTimeout = time.Second * 10
 )
 
 type Client struct {
@@ -45,6 +51,18 @@ func (this *Client) ReadFull(p []byte) error {
 	return nil
 }
 
+func (this *Client) ReadMessageHeader(p []byte) error {
+	err := this.ReadFull(p)
+	if err != nil {
+		return errors.New("message header is invalid")
+	}
+	return nil
+}
+
+func (this *Client) WriteError(err error) {
+	this.Write([]byte(err.Error()))
+}
+
 func (this *Client) Id() ID {
 	return this.ConnId
 }
@@ -66,7 +84,7 @@ func (this *Client) handshake() error {
 	}
 
 	userid, deviceInfo := buf[:32], buf[32:]
-	this.UserId = userid
+	copy(this.UserId[:], userid)
 	this.DeviceInfo = deviceInfo
 
 	this.Write([]byte{byte(SuccessCodehandshake)})

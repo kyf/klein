@@ -1,8 +1,11 @@
 package connector
 
 import (
+	"encoding/binary"
 	"net"
 	"time"
+
+	"github.com/kyf/klein/message"
 )
 
 type TcpServer struct {
@@ -65,7 +68,11 @@ func handleTcpConn(conn net.Conn, server *TcpServer) {
 		return
 	}
 
-	server.ctx.Add(cli)
+	err = server.ctx.Add(cli)
+	if err != nil {
+		cli.WriteError(err)
+		return
+	}
 	defer server.ctx.Remove(cli)
 
 	header := make([]byte, 4)
@@ -89,7 +96,9 @@ func handleTcpConn(conn net.Conn, server *TcpServer) {
 			break
 		}
 		switch msg.Type {
-		case message.TextImage:
+		case message.TextMessage:
+		case message.ImageMessage:
+
 		default:
 		}
 	}
