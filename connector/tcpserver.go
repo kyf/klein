@@ -11,11 +11,11 @@ type TcpServer struct {
 }
 
 type TcpKeepAliveListener struct {
-	ln *net.TcpListener
+	ln *net.TCPListener
 }
 
 func (this *TcpKeepAliveListener) Accept() (net.Conn, error) {
-	conn, err := this.ln.AcceptTcp()
+	conn, err := this.ln.AcceptTCP()
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func NewTcpServer(port string, ctx *Connector) (*TcpServer, error) {
 		return nil, err
 	}
 
-	return &TcpServer{&TcpKeepAliveListener{ln}, ctx}
+	return &TcpServer{&TcpKeepAliveListener{ln.(*net.TCPListener)}, ctx}, nil
 }
 
 func (this *TcpServer) run() {
@@ -68,7 +68,29 @@ func handleTcpConn(conn net.Conn, server *TcpServer) {
 	server.ctx.Add(cli)
 	defer server.ctx.Remove(cli)
 
+	header := make([]byte, 4)
+	var body []byte
 	for {
-		cli.Read()
+		err := cli.ReadMessageHeader(header)
+		if err != nil {
+			cli.WriteError(err)
+			break
+		}
+		body = make([]byte, binary.BigEndian.Uint64(header))
+		err = cli.ReadFull(body)
+		if err != nil {
+			cli.WriteError(err)
+			break
+		}
+		msg := &message.Message{}
+		err = msg.Decode(body)
+		if err != nil {
+			cli.WriteError(err)
+			break
+		}
+		switch msg.Type {
+		case message.TextImage:
+		default:
+		}
 	}
 }

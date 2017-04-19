@@ -1,11 +1,5 @@
 package config
 
-import (
-	"io/ioutil"
-
-	yaml "gopkg.in/yaml.v2"
-)
-
 type ConnectorConfig struct {
 	LogPrefix string `yaml:"logprefix"`
 	LogPath   string `yaml:"logpath"`
@@ -14,12 +8,5 @@ type ConnectorConfig struct {
 }
 
 func (this *ConnectorConfig) Load(fpath string) error {
-	content, err := ioutil.ReadFile(fpath)
-	if err != nil {
-		return err
-	}
-	err = yaml.Unmarshal(content, this)
-	if err != nil {
-		return err
-	}
+	return load(this, fpath)
 }

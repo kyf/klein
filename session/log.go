@@ -1,7 +1,6 @@
-package connector
+package session
 
 import (
-	"io"
 	"log"
 	"os"
 )
@@ -12,10 +11,10 @@ type Logger struct {
 }
 
 func NewLogger(path, prefix string) (*Logger, error) {
-	fp, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	fp, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.A_APPEND, 0666)
 	if err != nil {
 		return nil, err
 	}
 	logger := log.New(fp, prefix, log.LstdFlags)
-	return &Logger{logger, fp}, nil
+	return &Logger{logger, fp}
 }

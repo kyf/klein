@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package session;
+
+service Session{
+    rpc Register(RegisterRequest)returns(RegisterReply){}
+
+    rpc UnRegister(UnRegisterRequest)returns(UnRegisterReply){}
+
+    rpc GetClients(GetClientsRequest)returns(GetClientsReply){}
+}
+
+message RegisterRequest{
+    string UserId = 1;
+    string ConnId = 2;
+    string ConnectorHost = 3;
+}
+
+message RegisterReply{
+    bool Status = 1;
+    string Message = 2;
+}
+
+message UnRegisterRequest{
+    string UserId = 1;
+    string ConnId = 2;
+    string ConnectorHost = 3;
+}
+
+message UnRegisterReply{
+    string Status = 1;
+    string Message = 2;
+}
+
+message GetClientsRequest{
+    string UserId = 1;
+}
+
+message ConnHost {
+    string ConnId = 1;
+    string Host = 2;
+}
+
+message GetClientsReply{
+    repeated ConnHost Hosts = 1;
+}

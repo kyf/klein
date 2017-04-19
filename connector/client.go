@@ -16,9 +16,8 @@ var (
 type Client struct {
 	conn       net.Conn
 	ConnId     ID
-	UserId     string
-	DeviceInfo string
-	AppId      string
+	UserId     [32]byte
+	DeviceInfo []byte
 }
 
 func NewClient(c net.Conn) *Client {
@@ -40,7 +39,7 @@ func (this *Client) ReadFull(p []byte) error {
 	}
 
 	if num != len(p) {
-		return errore.New("client.ReadFull: not full")
+		return errors.New("client.ReadFull: not full")
 	}
 
 	return nil
@@ -54,7 +53,7 @@ func (this *Client) handshake() error {
 	length := make([]byte, 4)
 	err := this.ReadFull(length)
 	if err != nil {
-		this.Write([]byte{ErrCodehandshakeInvalidSize})
+		this.Write([]byte{byte(ErrCodehandshakeInvalidSize)})
 		return err
 	}
 
@@ -62,15 +61,14 @@ func (this *Client) handshake() error {
 	buf := make([]byte, _len)
 	err = this.ReadFull(buf)
 	if err != nil {
-		this.Write([]byte{ErrCodehandshakeInvalidBody})
+		this.Write([]byte{byte(ErrCodehandshakeInvalidBody)})
 		return err
 	}
 
-	userid, appid, deviceInfo := buf[:32], buf[32:64], buf[64:]
-	this.UserId = string(userid)
-	this.AppId = string(appid)
-	this.DeviceInfo = string(deviceInfo)
+	userid, deviceInfo := buf[:32], buf[32:]
+	this.UserId = userid
+	this.DeviceInfo = deviceInfo
 
-	this.Write([]byte{SuccessCodehandshake})
+	this.Write([]byte{byte(SuccessCodehandshake)})
 	return nil
 }

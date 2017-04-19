@@ -19,14 +19,14 @@ func NewConnector() *Connector {
 	return &Connector{clientPool: make(map[ID]*Client)}
 }
 
-func (this *Connector) Add(cli *Client) error {
+func (this *Connector) Add(cli *Client) {
 	this.Lock()
 	defer this.Unlock()
 
 	this.clientPool[cli.Id()] = cli
 }
 
-func (this *Connector) Remove(cli *Client) error {
+func (this *Connector) Remove(cli *Client) {
 	this.Lock()
 	defer this.Unlock()
 
@@ -52,23 +52,19 @@ func (this *Connector) Init(confPath string) error {
 
 func (this *Connector) Run() {
 	exit := make(chan os.Signal, 1)
-	go handleSignal(exit)
-	signal.Notify(exit, os.Interrupt, os.Kill)
 
-	tcpserver, err := NewTcpServer(this.conf.TcpPort)
+	tcpserver, err := NewTcpServer(this.conf.TcpPort, this)
 	if err != nil {
 		this.logger.Fatal(err)
 	}
 
-	httpserver, err := NewHttpServer(this.conf.HttpPort)
-	if err != nil {
-		this.logger.Fatal(err)
-	}
+	httpserver := NewHttpServer(this.conf.HttpPort, this)
 
 	go tcpserver.run()
 
 	go httpserver.run()
 
+	signal.Notify(exit, os.Interrupt, os.Kill)
 	<-exit
 
 	tcpserver.stop()
