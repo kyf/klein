@@ -75,6 +75,8 @@ func handleTcpConn(conn net.Conn, server *TcpServer) {
 	}
 	defer server.ctx.Remove(cli)
 
+	go cli.Wait()
+
 	header := make([]byte, 4)
 	var body []byte
 	for {

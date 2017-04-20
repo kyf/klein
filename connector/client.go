@@ -24,6 +24,7 @@ type Client struct {
 	ConnId     ID
 	UserId     [32]byte
 	DeviceInfo []byte
+	Ch         chan *MessageRequest
 }
 
 func NewClient(c net.Conn) *Client {
@@ -89,4 +90,23 @@ func (this *Client) handshake() error {
 
 	this.Write([]byte{byte(SuccessCodehandshake)})
 	return nil
+}
+
+func (this *Client) Wait() {
+	for m := range this.Ch {
+		msg := &message.Message{
+			Type:       m.MsgType,
+			SequenceId: m.SequenceId,
+			ConnId:     m.ConnId,
+			Sender:     m.Sender,
+			Receiver:   m.Receiver,
+			Body:       m.Body,
+		}
+
+		data, err := msg.Encode()
+		_, err := this.Write(data)
+		if err != nil {
+
+		}
+	}
 }

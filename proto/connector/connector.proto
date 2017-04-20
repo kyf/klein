@@ -7,5 +7,16 @@ service Connector {
 }
 
 message MessageRequest{
-    
+    int32 MsgType = 1;
+    string SequenceId = 2;
+    string ConnId = 3;
+    string Sender = 4;
+    string Receiver = 5;
+    string Body = 6;
+}
+
+
+message ReceiveReply{
+    bool Status = 1;
+    string Message = 2;
 }
