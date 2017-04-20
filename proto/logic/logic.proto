@@ -3,7 +3,6 @@ syntax = "proto3";
 package logic;
 
 service Logic {
-    rpc SendMessage(MessageRequest)returns(SendReply){}
     rpc ReceiveMessage(MessageRequest)returns(ReceiveReply){}
 }
 
@@ -14,12 +13,6 @@ message MessageRequest{
     string Sender = 4;
     string Receiver = 5;
     string Body = 6;
-}
-
-
-message SendReply{
-    bool Status = 1;
-    string Message = 2;
 }
 
 message ReceiveReply{

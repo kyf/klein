@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package connector;
+
+service Connector {
+    rpc ReceiveMessage(MessageRequest)returns(ReceiveReply){}
+}
+
+message MessageRequest{
+    
+}

@@ -4,10 +4,12 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/kyf/klein/config"
-	"github.com/kyf/klein/connector"
+	//"github.com/kyf/klein/connector"
 	"github.com/kyf/klein/session"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
@@ -17,7 +19,7 @@ type Server struct {
 	logger        *Logger
 	ln            net.Listener
 	sessionClient session.SessionClient
-	connClients   map[string]connector.ConnectorClient
+	//connClients   map[string]connector.ConnectorClient
 }
 
 func NewServer(confpath string) (*Server, error) {
@@ -32,19 +34,25 @@ func NewServer(confpath string) (*Server, error) {
 		return nil, err
 	}
 
+	return &Server{conf: conf, logger: logger}, nil
+}
+
+func (this *Server) Run() error {
 	svr := grpc.NewServer()
 	serverSide := &LogicServerSide{this}
 	RegisterLogicServer(svr, serverSide)
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*30)
 
-	sessionConn := grpc.DialContext(ctx, conf.SessionHost, grpc.WithUserAgent(LOGIC_USERAGENT), grpc.WithInsecure())
+	sessionConn, err := grpc.DialContext(ctx, this.conf.SessionHost, grpc.WithUserAgent(LOGIC_USERAGENT), grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
 	sessionClient := session.NewSessionClient(sessionConn)
 
-	return &Server{conf: conf, logger: logger, svr: svr, sessionClient: sessionClient}, nil
-}
+	this.svr = svr
+	this.sessionClient = sessionClient
 
-func (this *Server) Run() error {
 	ln, err := net.Listen("tcp", ":"+this.conf.RpcPort)
 	if err != nil {
 		return err
@@ -63,6 +71,7 @@ func (this *Server) Run() error {
 	signal.Notify(exit, os.Kill, os.Interrupt)
 	<-exit
 	this.Stop()
+	return nil
 }
 
 func (this *Server) Stop() {
