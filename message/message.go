@@ -12,6 +12,12 @@ func (this MessageType) String() string {
 		return "TextMessage"
 	case ImageMessage:
 		return "ImageMessage"
+	case AckMessage:
+		return "AckMessage"
+	case PingMessage:
+		return "PingMessage"
+	case PongMessage:
+		return "PongMessage"
 	default:
 	}
 
@@ -26,6 +32,9 @@ const (
 	_ MessageType = iota
 	TextMessage
 	ImageMessage
+	AckMessage
+	PingMessage
+	PongMessage
 )
 
 type Message struct {

@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net"
 	"time"
+
+	"github.com/kyf/klein/message"
 )
 
 var (
@@ -19,12 +21,18 @@ const (
 	SessionUnRegisterTimeout = time.Second * 10
 )
 
+type MessagePackage struct {
+	ch chan string
+	m  *MessageRequest
+}
+
 type Client struct {
 	conn       net.Conn
 	ConnId     ID
 	UserId     [32]byte
 	DeviceInfo []byte
-	Ch         chan *MessageRequest
+	ReqCh      chan *MessageRequest
+	ReplyCh    chan *ReceiveAck
 }
 
 func NewClient(c net.Conn) *Client {
@@ -93,7 +101,15 @@ func (this *Client) handshake() error {
 }
 
 func (this *Client) Wait() {
-	for m := range this.Ch {
+	waitReplyChs := make(map[seq]chan int)
+
+	go func() {
+		for rp := range this.ReplyCh {
+
+		}
+	}()
+
+	for m := range this.ReqCh {
 		msg := &message.Message{
 			Type:       m.MsgType,
 			SequenceId: m.SequenceId,

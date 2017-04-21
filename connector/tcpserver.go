@@ -100,6 +100,10 @@ func handleTcpConn(conn net.Conn, server *TcpServer) {
 		switch msg.Type {
 		case message.TextMessage:
 		case message.ImageMessage:
+		case message.AckMessage:
+			cli.ReplyCh <- message.Body
+		case message.PingMessage:
+		case message.PongMessage:
 
 		default:
 		}

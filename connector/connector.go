@@ -24,6 +24,14 @@ func NewConnector() *Connector {
 	return &Connector{clientPool: make(map[ID]*Client)}
 }
 
+func (this *Connector) Find(id ID) (*Client, error) {
+	if cli, ok := this.clientPool[id]; ok {
+		return cli, nil
+	} else {
+		return nil, errors.New("client offline")
+	}
+}
+
 func (this *Connector) Add(cli *Client) error {
 	this.Lock()
 	defer this.Unlock()

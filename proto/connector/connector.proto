@@ -3,7 +3,7 @@ syntax = "proto3";
 package connector;
 
 service Connector {
-    rpc ReceiveMessage(MessageRequest)returns(ReceiveReply){}
+    rpc ReceiveMessage(MessageRequest)returns(Reply){}
 }
 
 message MessageRequest{
@@ -15,8 +15,4 @@ message MessageRequest{
     string Body = 6;
 }
 
-
-message ReceiveReply{
-    bool Status = 1;
-    string Message = 2;
-}
+message Reply{}
